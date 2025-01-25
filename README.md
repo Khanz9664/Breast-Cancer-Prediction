@@ -10,6 +10,7 @@ Breast cancer is one of the most common cancers in women worldwide. Early detect
 ---
 
 ### Key Details:
+The dataset used in this app is sourced from Kaggle and includes 30 features extracted from breast cancer tumor samples. It contains information on both malignant and benign cases.
 - **Number of Samples**: 569
 - **Number of Features**: 30 (e.g., radius, texture, smoothness, compactness)
 - **Target Variable**: Diagnosis (Malignant or Benign)
@@ -21,3 +22,22 @@ Breast cancer is one of the most common cancers in women worldwide. Early detect
    ```bash
    git clone https://github.com/Khanz9664/Breast-Cancer-Prediction.git
    cd Breast-Cancer-Prediction
+
+---
+
+## How to Run the App
+1. Ensure the `breast_cancer_model.pkl` and `data.csv` files are in the project directory.
+2. Start the Streamlit app:
+   ```bash
+   streamlit run app.py
+   ```
+3. Open your web browser and go to `http://localhost:8501` to interact with the app.
+
+---
+
+## Usage
+1. Adjust the sliders in the sidebar to input tumor feature values.
+2. Click on the **Predict** button to get the prediction results.
+3. Explore:
+   - **Feature Importance:** Understand which features contributed the most to the prediction.
+   - **Feature Correlation Heatmap:** Gain insights into relationships between features.
