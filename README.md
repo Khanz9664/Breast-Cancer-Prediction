@@ -26,7 +26,7 @@ The dataset used in this app is sourced from Kaggle and includes 30 features ext
 ---
 
 ## How to Run the App
-1. Ensure the `breast_cancer_model.pkl` and `data.csv` files are in the project directory.
+1. Ensure the `breast_cancer_model_v2.pkl` and `data.csv` files are in the project directory.
 2. Open Terminal in Project Directory
 3. Start the Streamlit app using this Command:
    ```bash
