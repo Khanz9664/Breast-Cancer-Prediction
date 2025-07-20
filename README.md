@@ -1,3 +1,7 @@
+![Watch the video on YouTube](./vid.mp4)
+
+---
+
 # Breast-Cancer-Prediction
 
 This repository contains a machine learning project aimed at predicting the likelihood of breast cancer based on a dataset of medical features. The goal is to create a predictive model that assists in the early diagnosis of breast cancer, helping medical professionals make informed decisions.
