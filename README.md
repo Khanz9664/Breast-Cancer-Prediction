@@ -1,4 +1,4 @@
-![Watch the video on YouTube](./vid.mp4)
+![Watch the video on YouTube](vid.mp4)
 
 ---
 
