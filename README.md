@@ -1,6 +1,4 @@
-<video controls>
-  <source src="vid.mp4" type="video/mp4">
-</video>
+🎥 [Click here to watch the demo video](https://raw.githubusercontent.com/Khanz9664/Breast-Cancer-Prediction/main/vid.mp4)
 
 ---
 
