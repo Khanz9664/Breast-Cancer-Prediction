@@ -1,4 +1,6 @@
-![Watch the video on YouTube](vid.mp4)
+<video controls>
+  <source src="vid.mp4" type="video/mp4">
+</video>
 
 ---
 
