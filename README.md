@@ -1,6 +1,3 @@
-🎥 [Click here to watch the demo video](https://raw.githubusercontent.com/Khanz9664/Breast-Cancer-Prediction/main/vid.mp4)
-
----
 
 # Breast-Cancer-Prediction
 
