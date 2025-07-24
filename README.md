@@ -31,7 +31,7 @@ The dataset used in this app is sourced from Kaggle and includes 30 features ext
 2. Open Terminal in Project Directory
 3. Start the Streamlit app using this Command:
    ```bash
-   streamlit run app.py
+   streamlit run App.py
    ```
 4. Open your web browser and go to `http://localhost:8501` to interact with the app.
 
