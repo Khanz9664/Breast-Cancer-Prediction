@@ -14,7 +14,6 @@ A web application built with Streamlit to predict breast cancer based on tumor f
 
 -   **Interactive Prediction**: Users can input tumor features through sliders in the sidebar to get a real-time prediction of whether a tumor is malignant or benign. 
 -   **Data Visualization**: The application displays a correlation heatmap and distribution plots of the dataset features. 
--   **Model Explainability**: The underlying Jupyter Notebook uses SHAP (SHapley Additive exPlanations) for model explainability.
 -   **User-Friendly Interface**: A simple and intuitive web interface powered by Streamlit. 
 
 ---
@@ -35,7 +34,7 @@ The prediction model is a **Random Forest Classifier** from the scikit-learn lib
 
 -   **Model Training**: The model is trained on a scaled version of the dataset, split into 80% for training and 20% for testing. 
 -   **Model Evaluation**: The model's performance is evaluated using a classification report, confusion matrix, and ROC-AUC score. 
--   **Model Serialization**: The trained model is saved as `breast_cancer_model.pkl` using `joblib` for use in the Streamlit application. 
+-   **Model Serialization**: The trained model is saved as `breast_cancer_model_v2.pkl` using `joblib` for use in the Streamlit application. 
 
 ---
 
