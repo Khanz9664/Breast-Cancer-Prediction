@@ -16,3 +16,6 @@ shap==0.41.0
 
 # Statistical functions
 scipy==1.10.1
+
+# PDF Generation
+fpdf2==2.7.4
