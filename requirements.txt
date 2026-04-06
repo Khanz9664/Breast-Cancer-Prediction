@@ -1,21 +1,28 @@
-# Data manipulation and visualization
-pandas==1.5.3
-numpy==1.24.2
-matplotlib==3.7.1
-seaborn==0.11.2
-pathlib==1.0.1
-joblib==1.2.0
-datetime==4.3
-plotly==6.5
+# Core data libraries (Python 3.14 compatible)
+numpy==1.26.4
+pandas==2.2.2
 
-# Machine Learning libraries
-scikit-learn==1.2.2
+# Visualization
+matplotlib==3.9.0
+seaborn==0.13.2
+plotly==6.0.0
+
+# Utilities
+joblib==1.4.2
+
+# Machine Learning
+scikit-learn==1.4.2
+scipy==1.13.1
 
 # Model interpretability
-shap==0.41.0
-
-# Statistical functions
-scipy==1.10.1
+shap==0.45.1
 
 # PDF Generation
-fpdf2==2.7.4
+fpdf2==2.7.9
+
+# Streamlit (important!)
+streamlit==1.33.0
+
+# Build safety (prevents pkg_resources/distutils issues)
+setuptools>=70.0.0
+wheel
