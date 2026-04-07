@@ -10,6 +10,6 @@ pytest-xdist==3.6.1      # parallel test execution with -n auto
 flake8==7.1.1
 flake8-bugbear==24.10.31
 
-# Type checking (optional)
+# Type checking (optional — only used by mypy, not by pytest)
 mypy==1.11.2
-pandas-stubs==2.1.4.240218
+pandas-stubs>=2.2          # 2.1.4.240218 was never published; use latest compatible
