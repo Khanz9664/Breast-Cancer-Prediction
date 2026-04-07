@@ -1,0 +1,310 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master", "develop" ]
+  pull_request:
+    branches: [ "main", "master", "develop" ]
+  workflow_dispatch:            # allow manual trigger from GitHub UI
+
+# Cancel in-progress runs for the same branch on new push
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"        # pin for reproducibility
+  COVERAGE_MIN: 70              # fail if coverage drops below this %
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 1 — Lint & Static Analysis
+  # ──────────────────────────────────────────────────────────────────────────
+  lint:
+    name: "Lint & Style Check"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+          cache-dependency-path: "requirements-dev.txt"
+
+      - name: Install linting tools
+        run: pip install flake8 flake8-bugbear
+
+      - name: Run flake8 on app source
+        run: |
+          flake8 app/ \
+            --max-line-length=110 \
+            --extend-ignore=E203,W503 \
+            --exclude=app/__pycache__,app/components/__pycache__,app/utils/__pycache__ \
+            --count --statistics
+
+      - name: Run flake8 on test suite
+        run: |
+          flake8 tests/ \
+            --max-line-length=120 \
+            --extend-ignore=E203,W503,F401 \
+            --exclude=tests/__pycache__ \
+            --count --statistics
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 2 — Unit & Integration Tests with Coverage
+  # ──────────────────────────────────────────────────────────────────────────
+  test:
+    name: "Tests (Python ${{ matrix.python-version }})"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: lint
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install runtime dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install test/dev dependencies
+        run: pip install -r requirements-dev.txt
+
+      # ── Run the full test suite with coverage measurement ──────────────────
+      - name: Run tests with pytest
+        run: |
+          pytest tests/ \
+            --cov=app \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term-missing \
+            --cov-fail-under=${{ env.COVERAGE_MIN }} \
+            -v \
+            --tb=short \
+            -p no:warnings \
+            --junitxml=reports/pytest-results-${{ matrix.python-version }}.xml
+
+      # ── Upload JUnit XML (appears in GitHub Actions test summary) ──────────
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-py${{ matrix.python-version }}
+          path: reports/pytest-results-${{ matrix.python-version }}.xml
+          retention-days: 30
+
+      # ── Upload coverage XML (needed by coverage badge / Codecov) ───────────
+      - name: Upload coverage report
+        if: matrix.python-version == env.PYTHON_VERSION
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 30
+
+      # ── Optional: push coverage to Codecov ─────────────────────────────────
+      # Uncomment if you connect your repo to https://codecov.io
+      # - name: Upload to Codecov
+      #   if: matrix.python-version == env.PYTHON_VERSION
+      #   uses: codecov/codecov-action@v4
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     files: coverage.xml
+      #     fail_ci_if_error: false
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 3 — Dependency Security Audit
+  # ──────────────────────────────────────────────────────────────────────────
+  security:
+    name: "Security Audit"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: lint
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Audit runtime dependencies for known CVEs
+        run: pip-audit -r requirements.txt --progress-spinner off || true
+        # `|| true` prevents a pipeline failure for advisory-only issues;
+        # remove it if you want hard failures on any CVE
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 4 — Model Artifact Integrity Check
+  # ──────────────────────────────────────────────────────────────────────────
+  model-check:
+    name: "Model Artifact Integrity"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install minimal dependencies for model check
+        run: |
+          pip install scikit-learn==1.4.1.post1 numpy==1.26.4 joblib==1.3.2
+
+      - name: Check model artifact exists and is loadable
+        run: |
+          python - <<'PY'
+          import joblib, os, sys
+
+          model_path = "models/breast_cancer_model_v2.pkl"
+
+          if not os.path.exists(model_path):
+              print(f"  Model file not found at {model_path}")
+              print("   This is expected in CI if the model is not committed to the repo.")
+              print("   Add it via Git LFS or a cloud artifact store for production CI.")
+              sys.exit(0)
+
+          print(f" Model file found: {os.path.getsize(model_path):,} bytes")
+
+          bundle = joblib.load(model_path)
+          if isinstance(bundle, dict):
+              print(f" Bundle keys: {list(bundle.keys())}")
+              model = bundle.get("model")
+          else:
+              model = bundle
+
+          assert hasattr(model, "predict_proba"), "Model must expose predict_proba"
+          print(f" Model type: {type(model).__name__}")
+          print(" Model integrity check passed.")
+          PY
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 5 — Streamlit App Smoke Test (import + config validation)
+  # ──────────────────────────────────────────────────────────────────────────
+  smoke-test:
+    name: " App Smoke Test"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install all runtime dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify all utility modules are importable
+        working-directory: app
+        run: |
+          python - <<'PY'
+          import sys
+
+          # Stub streamlit before any app imports
+          import types
+          st = types.ModuleType("streamlit")
+          def _passthrough(fn=None, **kw): return fn if fn else lambda f: f
+          st.cache_resource = st.cache_data = _passthrough
+          for attr in ("error","warning","stop","success","info","write",
+                       "markdown","dataframe","plotly_chart","metric",
+                       "button","selectbox","slider","multiselect","spinner"):
+              setattr(st, attr, lambda *a, **k: None)
+          st.session_state = {}
+          sys.modules["streamlit"] = st
+
+          # Now import each utility module
+          modules = [
+              "utils.clinical_insights",
+              "utils.counterfactuals",
+              "utils.monitoring",
+              "utils.robustness",
+              "utils.sensitivity",
+              "utils.synthetic_data",
+              "utils.error_analysis",
+              "utils.report_generator",
+          ]
+          for mod in modules:
+              __import__(mod)
+              print(f" Imported {mod}")
+
+          print("\n All utility modules imported successfully.")
+          PY
+
+      - name: Validate requirements.txt is parseable
+        run: |
+          python - <<'PY'
+          with open("requirements.txt") as f:
+              lines = [l.strip() for l in f if l.strip() and not l.startswith("#")]
+          print(f" requirements.txt has {len(lines)} dependency entries")
+          for line in lines:
+              print(f"   {line}")
+          PY
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 6 — Pipeline Summary (runs after everything, always)
+  # ──────────────────────────────────────────────────────────────────────────
+  summary:
+    name: " Pipeline Summary"
+    runs-on: ubuntu-latest
+    needs: [lint, test, security, model-check, smoke-test]
+    if: always()
+
+    steps:
+      - name: Print pipeline status
+        run: |
+          echo "=============================="
+          echo "  CI/CD Pipeline Summary"
+          echo "=============================="
+          echo "Lint:        ${{ needs.lint.result }}"
+          echo "Tests:       ${{ needs.test.result }}"
+          echo "Security:    ${{ needs.security.result }}"
+          echo "Model Check: ${{ needs.model-check.result }}"
+          echo "Smoke Test:  ${{ needs.smoke-test.result }}"
+          echo "=============================="
+
+          # Fail the summary job if any critical job failed
+          if [[ "${{ needs.lint.result }}"  == "failure" ||
+                "${{ needs.test.result }}"  == "failure" ||
+                "${{ needs.smoke-test.result }}" == "failure" ]]; then
+            echo " Pipeline FAILED — one or more critical stages failed."
+            exit 1
+          else
+            echo " Pipeline PASSED"
+          fi

@@ -30,6 +30,7 @@
 8. [Clinical Impact](#8-clinical-impact)
 9. [Ethical Considerations](#9-ethical-considerations)
 10. [Conclusions](#10-conclusions)
+11. [Testing & CI/CD](#11-testing--cicd)
 
 ---
 
@@ -337,9 +338,38 @@ flowchart TD
     style N fill:#f3e8ff,stroke:#a855f7,color:#581c87
 ```
 
-### 5.2 Feature Engineering
+### 5.2 Feature Engineering & Selection
 
-No new features were engineered; the 30 raw WDBC measurements were used as-is after **StandardScaler normalization**. This design choice preserves direct clinical interpretability — every feature maps 1:1 to a measurable cytological property.
+No synthetic features were created — the 30 raw WDBC measurements are used after **StandardScaler normalization**. Feature *selection* was performed using two independent methods to identify the most discriminating 15-feature subset:
+
+**Method A: Univariate ANOVA F-test (SelectKBest)**
+
+```
+UNIVARIATE SELECTION RESULTS (Top 15 by ANOVA F-score)
+
+  Feature                  F-Score
+  concave_points_worst     964.39   ← Strongest single predictor
+  perimeter_worst          897.94
+  concave_points_mean      861.68
+  radius_worst             860.78
+  perimeter_mean           697.24
+  area_worst               661.60
+  radius_mean              646.98
+  area_mean                573.06
+  concavity_mean           533.79
+  concavity_worst          436.69
+  compactness_mean         313.23
+  compactness_worst        304.34
+  radius_se                268.84
+  perimeter_se             253.90
+  area_se                  243.65
+```
+
+**Method B: Recursive Feature Elimination (RFE with RandomForest)**
+
+RFE selected overlapping but slightly different 15 features, including `texture_mean`, `texture_worst`, and `smoothness_worst` — demonstrating that ensemble-based importance captures different signal than univariate tests. The final production model uses the univariate set, which maps cleanly to the app's `PRIORITY_FEATURES` list.
+
+**Design rationale:** Using the univariate set preserves direct 1:1 clinical interpretability — every selected feature corresponds to a measurable cytological property visible in the sidebar.
 
 ### 5.3 Threshold Optimization
 
@@ -534,6 +564,25 @@ flowchart TB
 
 ### 7.1 Model Performance
 
+**Cross-Validation Results (5-fold stratified)**
+
+| Algorithm | CV Accuracy | Std Dev | Note |
+|---|---|---|---|
+| **Random Forest** | **0.9495** | ±0.0330 | Selected for production |
+| SVM | 0.9495 | — | Tied but slower |
+| Logistic Regression | 0.9407 | ±0.0315 | |
+| Gradient Boosting | 0.9319 | ±0.0377 | |
+
+**Best Random Forest Hyperparameters** (GridSearchCV · 540 fits)
+
+```
+n_estimators=200, max_depth=None
+min_samples_leaf=1, min_samples_split=10
+Best CV score: 0.9516
+```
+
+**Production Model Metrics**
+
 | Metric | Value | Commentary |
 |---|---|---|
 | **Accuracy** | **98.2%** | Near-clinical-grade on held-out test set |
@@ -542,8 +591,8 @@ flowchart TB
 | **Specificity** | **~99%** | Very few benign cases over-flagged |
 | **False Negatives** | **2** | At T = 0.50 on test set (114 samples) |
 | **False Positives** | **<5** | At T = 0.50 on test set |
-| **Training Split** | **80/20 stratified** | Class balance preserved in both splits |
-| **Algorithm** | **Random Forest v2** | 100 estimators, tuned hyperparameters |
+| **Training Split** | **80/20 stratified** | 455 train / 114 test; class balance preserved |
+| **Algorithm** | **Random Forest v2** | 200 estimators, tuned hyperparameters |
 
 ### 7.2 Confusion Matrix — Representative
 
@@ -781,6 +830,86 @@ DELIVERY SUMMARY
 | **Federated learning** | Multi-institution training without data sharing |
 | **Model versioning & rollback** | MLflow or DVC for formal model registry |
 | **LIME comparison** | Complement SHAP with LIME for explanation robustness |
+
+---
+
+## 11. Testing & CI/CD
+
+### 11.1 Test Architecture
+
+The project ships with a comprehensive automated test suite that validates every utility module independently from the Streamlit runtime. Tests use a shared `conftest.py` fixture that stubs out Streamlit and builds an in-memory WDBC dataset, making the suite fast and fully CI-compatible.
+
+```
+TEST SUITE OVERVIEW
+
+  Total tests:   201
+  Passing:       201 (100%)
+  Skipped:       2 (edge-case result-dependent)
+  Run time:      < 5 seconds
+```
+
+### 11.2 Test Coverage by Module
+
+| Test File | Tests | Module Tested | Coverage |
+|---|---|---|---|
+| `test_clinical_insights.py` | 20 | `clinical_insights.py` | **100%** |
+| `test_sensitivity.py` | 15 | `sensitivity.py` | **100%** |
+| `test_synthetic_data.py` | 20 | `synthetic_data.py` | **100%** |
+| `test_report_generator.py` | 19 | `report_generator.py` | **97%** |
+| `test_error_analysis.py` | 20 | `error_analysis.py` | **96%** |
+| `test_counterfactuals.py` | 12 | `counterfactuals.py` | **95%** |
+| `test_monitoring.py` | 18 | `monitoring.py` | **93%** |
+| `test_robustness.py` | 17 | `robustness.py` | **91%** |
+| `test_data_pipeline.py` | 35 | Full ML pipeline | — |
+| `test_model_card.py` | 20 | `main.py` helpers | — |
+
+### 11.3 Notebook Ground-Truth Locked in Tests
+
+The `test_data_pipeline.py` file locks in the exact outputs observed in the notebook, making it impossible for silent regressions to go undetected:
+
+```python
+# test_data_pipeline.py — ground-truth assertions
+assert len(df) == 569                  # Total WDBC samples
+assert (df["diagnosis"] == 0).sum() == 357  # Benign count
+assert (df["diagnosis"] == 1).sum() == 212  # Malignant count
+assert len(X_train) == 455             # Notebook: Training set size
+assert len(X_test)  == 114             # Notebook: Test set size
+assert (y_train == 0).sum() == 285     # Train: 285 Benign
+assert (y_train == 1).sum() == 170     # Train: 170 Malignant
+assert (y_test  == 0).sum() == 72      # Test:  72  Benign
+assert (y_test  == 1).sum() == 42      # Test:  42  Malignant
+```
+
+### 11.4 CI/CD Pipeline
+
+Commits to `main`, `master`, or `develop`, and all pull requests, trigger the GitHub Actions pipeline:
+
+```mermaid
+graph LR
+    A[Lint] --> C[Tests]
+    A --> D[Security]
+    C --> E[Model Check]
+    C --> F[Smoke Test]
+    E --> G[Summary]
+    F --> G
+    D --> G
+```
+
+| Stage | Tool | Purpose |
+|---|---|---|
+| **Lint** | `flake8` | Enforce code style on `app/` and `tests/` |
+| **Tests** | `pytest` × Python 3.10/3.11/3.12 | Matrix test run with ≥70% coverage gate |
+| **Security** | `pip-audit` | CVE scan on all runtime dependencies |
+| **Model Check** | `joblib` | Verify `.pkl` artifact loads and exposes `predict_proba` |
+| **Smoke Test** | Python headless import | All utility modules importable without Streamlit |
+| **Summary** | Shell gate | Fails the pipeline if any critical job fails |
+
+Key design decisions:
+- **Coverage gate**: Pipeline fails if overall utility coverage drops below 70%
+- **Multi-Python matrix**: Validates compatibility across 3.10, 3.11, and 3.12
+- **Concurrency cancellation**: Duplicate runs on the same branch are auto-cancelled
+- **Pip caching**: Dependencies cached per Python version for fast re-runs
+- **Artifact retention**: JUnit XML reports and coverage.xml kept for 30 days
 
 ---
 

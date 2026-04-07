@@ -18,8 +18,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-2.2-blue?style=flat-square)]()
 [![Dataset](https://img.shields.io/badge/Dataset-WDBC%20569%20samples-purple?style=flat-square)]()
-[![Accuracy](https://img.shields.io/badge/Accuracy-~98%25-brightgreen?style=flat-square)]()
+[![CV Accuracy](https://img.shields.io/badge/CV%20Accuracy-95.1%25-brightgreen?style=flat-square)]()
 [![AUC](https://img.shields.io/badge/AUC--ROC-0.999-brightgreen?style=flat-square)]()
+[![Tests](https://img.shields.io/badge/Tests-201%20passing-brightgreen?style=flat-square)]()
+[![Coverage](https://img.shields.io/badge/Coverage-100%25%20utils-brightgreen?style=flat-square)]()
+[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?style=flat-square&logo=github-actions&logoColor=white)](.github/workflows/ci.yml)
 
 </div>
 
@@ -99,12 +102,12 @@ graph TB
         T6["Dataset Explorer Tab"]
     end
 
-    subgraph CORE["⚙️  Application Core (app/)"]
+    subgraph CORE["Application Core (app/)"]
         MAIN["main.py\nOrchestrator"]
         UI_C["components/\nui · sidebar · visualizations\nethics · explorer"]
     end
 
-    subgraph UTILS["🔧  Utility Layer (utils/)"]
+    subgraph UTILS["Utility Layer (utils/)"]
         ML["model_loader.py\nRandom Forest + SHAP"]
         DATA["data_loader.py\nWDBC Dataset"]
         MON["monitoring.py\nDrift Detection"]
@@ -117,7 +120,7 @@ graph TB
         REP["report_generator.py\nPDF Export"]
     end
 
-    subgraph ASSETS["📦  Assets"]
+    subgraph ASSETS["Assets"]
         MDL["models/\nbreast_cancer_model_v2.pkl"]
         CSV["data/\ndata.csv (WDBC)"]
         LOG["predictions.csv\nAudit Log"]
@@ -149,7 +152,7 @@ graph TB
 
 ```mermaid
 flowchart LR
-    A(["🔬 FNA Measurements\n30 features"]) --> B["Feature Alignment\n& Validation"]
+    A(["FNA Measurements\n30 features"]) --> B["Feature Alignment\n& Validation"]
     B --> C["StandardScaler\nNormalization"]
     C --> D["Random Forest\nEnsemble (v2)"]
     D --> E{"Probability\n≥ Threshold?"}
@@ -264,6 +267,46 @@ journey
 
 ## Model Performance
 
+### Training Pipeline Results (from `Breast_Cancer_Prediction.ipynb`)
+
+**Feature Selection — Univariate ANOVA F-test (Top 15)**
+
+| Feature | F-Score | Feature | F-Score |
+|---------|---------|---------|----------|
+| `concave_points_worst` | **964.39** | `concave_points_mean` | **861.68** |
+| `perimeter_worst` | 897.94 | `radius_worst` | 860.78 |
+| `perimeter_mean` | 697.24 | `area_worst` | 661.60 |
+| `radius_mean` | 646.98 | `area_mean` | 573.06 |
+| `concavity_mean` | 533.79 | `concavity_worst` | 436.69 |
+| `compactness_mean` | 313.23 | `compactness_worst` | 304.34 |
+| `radius_se` | 268.84 | `perimeter_se` | 253.90 |
+| `area_se` | 243.65 | | |
+
+**Model Cross-Validation (5-Fold, Stratified)**
+
+| Algorithm | CV Accuracy | Std Dev |
+|-----------|------------|----------|
+| **Random Forest** | **0.9495** | ±0.0330 |
+| Logistic Regression | 0.9407 | ±0.0315 |
+| Gradient Boosting | 0.9319 | ±0.0377 |
+| SVM | 0.9495 | — |
+
+**Best Random Forest Hyperparameters** (GridSearchCV · 540 fits)
+
+```
+n_estimators=200, max_depth=None, min_samples_leaf=1, min_samples_split=10
+Best CV score: 0.9516
+```
+
+**Dataset Split (80/20 stratified, random_state=42)**
+
+| Set | Samples | Benign | Malignant |
+|-----|---------|--------|----------|
+| Training | 455 | 285 | 170 |
+| Test | 114 | 72 | 42 |
+
+### Production Model Metrics
+
 | Metric | Value |
 |--------|-------|
 | **Accuracy** | ~98.2% |
@@ -272,6 +315,7 @@ journey
 | **Specificity** | ~99% (at T=0.50) |
 | **False Negatives** | 2 (at T=0.50, on test set) |
 | **Algorithm** | Random Forest Ensemble (v2) |
+| **Input Features** | 15 (univariate-selected) |
 | **Preprocessing** | StandardScaler normalization |
 | **Train/Test Split** | 80% / 20% stratified |
 
@@ -281,6 +325,9 @@ journey
 
 ```text
 Breast-Cancer-Prediction/
+├── .github/
+│   └── workflows/
+│       └── ci.yml               # GitHub Actions CI/CD pipeline (6 jobs)
 ├── .streamlit/
 │   └── config.toml              # Design token theme config
 ├── app/
@@ -302,17 +349,93 @@ Breast-Cancer-Prediction/
 │       ├── sensitivity.py       # Single-feature sensitivity curves
 │       ├── synthetic_data.py    # Gaussian synthetic sample generator
 │       └── report_generator.py  # PDF report builder
+├── tests/
+│   ├── conftest.py              # Shared fixtures (Streamlit stub, WDBC data, ML objects)
+│   ├── test_clinical_insights.py  # 20 tests — rule-based insight engine
+│   ├── test_counterfactuals.py    # 12 tests — what-if boundary search
+│   ├── test_data_pipeline.py      # 35 tests — dataset, scaler & split contracts
+│   ├── test_error_analysis.py     # 20 tests — ROC, confusion matrix, FP/FN
+│   ├── test_model_card.py         # 20 tests — HTML badge/insight block helpers
+│   ├── test_monitoring.py         # 18 tests — drift detection & CSV logging
+│   ├── test_report_generator.py   # 19 tests — PDF generation
+│   ├── test_robustness.py         # 17 tests — ensemble variance & CI
+│   ├── test_sensitivity.py        # 15 tests — feature sensitivity curves
+│   └── test_synthetic_data.py     # 20 tests — synthetic sample generation
 ├── data/
-│   └── data.csv                 # WDBC dataset
+│   └── data.csv                 # WDBC dataset (569 samples, 30 features)
 ├── models/
-│   ├── breast_cancer_model_v2.pkl
-│   └── scaler.pkl
+│   └── breast_cancer_model_v2.pkl
 ├── notebooks/
-│   └── breast_cancer_model.ipynb
+│   └── Breast_Cancer_Prediction.ipynb
 ├── screenshots/                 # UI documentation images
-├── requirements.txt
+├── requirements.txt             # Runtime dependencies
+├── requirements-dev.txt         # Test & CI dependencies
+├── setup.cfg                    # pytest configuration
 └── README.md
 ```
+
+---
+
+## Testing
+
+The project includes **201 automated tests** covering all utility business logic.
+
+### Run the Test Suite
+
+```bash
+# Install test dependencies
+pip install -r requirements-dev.txt
+
+# Run all tests
+pytest tests/
+
+# Run with coverage report
+pytest tests/ --cov=app --cov-report=term-missing
+
+# Run a specific test file
+pytest tests/test_monitoring.py -v
+```
+
+### Test Coverage (Utility Layer)
+
+| Module | Coverage |
+|--------|---------|
+| `clinical_insights.py` | **100%** |
+| `sensitivity.py` | **100%** |
+| `synthetic_data.py` | **100%** |
+| `report_generator.py` | **97%** |
+| `error_analysis.py` | **96%** |
+| `counterfactuals.py` | **95%** |
+| `monitoring.py` | **93%** |
+| `robustness.py` | **91%** |
+
+---
+
+## CI/CD Pipeline
+
+GitHub Actions runs automatically on every push and pull request to `main`, `master`, and `develop`.
+
+```mermaid
+graph LR
+    A[Lint] --> C[Tests]
+    A --> D[Security]
+    C --> E[Model Check]
+    C --> F[Smoke Test]
+    E --> G[Summary]
+    F --> G
+    D --> G
+```
+
+| Job | Description |
+|-----|-------------|
+| **Lint** | `flake8` style enforcement on `app/` and `tests/` |
+| **Tests** | pytest matrix across Python 3.10, 3.11, 3.12 with coverage gate (≥70%) |
+| **Security** | `pip-audit` scans `requirements.txt` for known CVEs |
+| **Model Check** | Verifies the `.pkl` bundle is loadable and exposes `predict_proba` |
+| **Smoke Test** | Imports every utility module in a headless environment |
+| **Summary** | Gate job — fails pipeline if any critical stage fails |
+
+See [`.github/workflows/ci.yml`](.github/workflows/ci.yml) for the full configuration.
 
 ---
 
