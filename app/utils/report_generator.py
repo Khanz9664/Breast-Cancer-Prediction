@@ -4,15 +4,15 @@ import numpy as np
 import pandas as pd
 
 # -- Colour palette -------------------------------------------------------------
-_RED    = (220,  53,  69)
-_GREEN  = ( 40, 167,  69)
+_RED = (220,  53,  69)
+_GREEN = (40, 167,  69)
 _ORANGE = (255, 140,   0)
-_BLUE   = (102, 126, 234)
-_DARK   = ( 33,  37,  41)
-_LIGHT  = (248, 249, 250)
-_MID    = (206, 212, 218)
-_WHITE  = (255, 255, 255)
-_GREY   = (108, 117, 125)
+_BLUE = (102, 126, 234)
+_DARK = (33,  37,  41)
+_LIGHT = (248, 249, 250)
+_MID = (206, 212, 218)
+_WHITE = (255, 255, 255)
+_GREY = (108, 117, 125)
 
 
 def _rgb(pdf, colour):
@@ -216,9 +216,9 @@ def generate_patient_report(
     # -- 4. Diagnostic Robustness -----------------------------------------------
     _section_title(pdf, "4. Diagnostic Robustness")
     if robustness:
-        level  = robustness.get("stability_level", "N/A")
-        score  = robustness.get("stability_score", 0.0)
-        ci     = robustness.get("ci", (0.0, 1.0))
+        level = robustness.get("stability_level", "N/A")
+        score = robustness.get("stability_score", 0.0)
+        ci = robustness.get("ci", (0.0, 1.0))
 
         level_colour = _GREEN if "Highly" in level else (_ORANGE if "Stable" in level else _RED)
 
@@ -251,7 +251,7 @@ def generate_patient_report(
              ln=True)
     pdf.ln(2)
 
-    cols_feat  = ["Feature", "Value"]
+    cols_feat = ["Feature", "Value"]
     widths_feat = [130, 60]
     _table_header(pdf, cols_feat, widths_feat)
 
@@ -290,13 +290,13 @@ def generate_patient_report(
     imp_df["AbsInf"] = imp_df["Influence"].abs()
     top10 = imp_df.sort_values("AbsInf", ascending=False).head(10)
 
-    cols_shap   = ["Rank", "Tumour Characteristic", "SHAP Score", "Direction"]
+    cols_shap = ["Rank", "Tumour Characteristic", "SHAP Score", "Direction"]
     widths_shap = [15, 90, 35, 50]
     _table_header(pdf, cols_shap, widths_shap)
 
     for rank, (_, row) in enumerate(top10.iterrows(), 1):
-        direction   = "-> Malignant" if row["Influence"] > 0 else "-> Benign"
-        dir_colour  = _RED if row["Influence"] > 0 else _GREEN
+        direction = "-> Malignant" if row["Influence"] > 0 else "-> Benign"
+        dir_colour = _RED if row["Influence"] > 0 else _GREEN
         _table_row(
             pdf,
             [str(rank), row["Feature"], f"{row['Influence']:+.4f}", direction],
@@ -322,10 +322,10 @@ def generate_patient_report(
     severity_map = {"high": _RED, "medium": _ORANGE, "low": _GREEN}
 
     for ins in insights:
-        feat     = ins.get("feature", "")
-        text     = ins.get("insight", "")
-        sev      = ins.get("severity", "low")
-        sev_col  = severity_map.get(sev, _GREY)
+        feat = ins.get("feature", "")
+        text = ins.get("insight", "")
+        sev = ins.get("severity", "low")
+        sev_col = severity_map.get(sev, _GREY)
         sev_label = sev.upper()
 
         # severity badge box

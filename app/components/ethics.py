@@ -1,6 +1,7 @@
 import streamlit as st
 import plotly.graph_objects as go
 
+
 def render_ethics_disclaimer():
     """Renders a prominent, compact medical disclaimer."""
     st.warning(
@@ -13,8 +14,16 @@ def render_ethics_disclaimer():
 def render_ethics_content(df):
     """Document-style Model Card with numbered sections and dividers."""
 
-    st.markdown('<div class="section-heading">Model Card &mdash; Breast Cancer Diagnostic System (v2.2)</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-subtext">A structured accountability document for the AI model deployed in this application.</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="section-heading">Model Card &mdash; '
+        'Breast Cancer Diagnostic System (v2.2)</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<div class="section-subtext">A structured accountability document '
+        'for the AI model deployed in this application.</div>',
+        unsafe_allow_html=True,
+    )
 
     # Identity card
     st.markdown("""
@@ -94,7 +103,7 @@ def render_ethics_content(df):
         c1, c2, c3 = st.columns(3)
         c1.metric('Binary Accuracy', '~96%', help='Held-out 20% test set')
         c2.metric('Primary Metric', 'AUC-ROC', help='Area under the Receiver Operating Characteristic curve')
-        c3.metric('Robustness', 'Ensemble Variance', help='Measured via tree-level prediction spread; see Model Monitoring tab')
+        c3.metric('Robustness', 'Ensemble Variance', help='Measured via tree-level prediction spread; see Model Monitoring tab')  # noqa: E501
 
     # Section 4 — Ethics
     st.markdown('<div class="section-label">4. Ethical Considerations</div>', unsafe_allow_html=True)
@@ -127,10 +136,10 @@ def render_ethics_content(df):
     st.markdown('<div class="section-label">5. Technical Limitations</div>', unsafe_allow_html=True)
     with st.container(border=True):
         limitations = [
-            ("Digital Biopsy Only", "Predictions rely on numeric FNA measurements. Genetic, genomic, and lifestyle risk factors are not included."),
-            ("Class Imbalance", "Dataset contains 357 Benign vs. 212 Malignant samples. This may bias the model toward higher specificity."),
-            ("Time-Invariant", "The model does not account for longitudinal tumor growth rates or treatment history."),
-            ("Distribution Shift", "Performance may degrade on samples from populations or imaging equipment not represented in the training data."),
+            ("Digital Biopsy Only", "Predictions rely on numeric FNA measurements. Genetic, genomic, and lifestyle risk factors are not included."),  # noqa: E501
+            ("Class Imbalance", "Dataset contains 357 Benign vs. 212 Malignant samples. This may bias the model toward higher specificity."),  # noqa: E501
+            ("Time-Invariant", "The model does not account for longitudinal tumor growth rates or treatment history."),  # noqa: E501
+            ("Distribution Shift", "Performance may degrade on samples from populations or imaging equipment not represented in the training data."),  # noqa: E501
         ]
         for title, body in limitations:
             st.markdown(f"**{title}** — {body}")

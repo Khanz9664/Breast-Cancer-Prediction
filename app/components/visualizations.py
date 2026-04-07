@@ -8,7 +8,7 @@ from sklearn.decomposition import PCA
 
 # ── Design token Plotly defaults ──────────────────────────────────────────────
 _FONT = dict(family='Inter, -apple-system, sans-serif', color='#0f172a', size=12)
-_TITLE_FONT = dict(family='Inter, sans-serif', color='#0f172a', size=14, weight=600) if False else dict(family='Inter, sans-serif', color='#0f172a', size=14)
+_TITLE_FONT = dict(family='Inter, sans-serif', color='#0f172a', size=14, weight=600) if False else dict(family='Inter, sans-serif', color='#0f172a', size=14)  # noqa: E501
 
 CLINICAL_LAYOUT = dict(
     paper_bgcolor='#ffffff',
@@ -21,13 +21,13 @@ CLINICAL_LAYOUT = dict(
 )
 
 # Design-token color palette
-C_PRIMARY   = '#3b82f6'
+C_PRIMARY = '#3b82f6'
 C_MALIGNANT = '#dc2626'
-C_BENIGN    = '#16a34a'
-C_WARNING   = '#f59e0b'
-C_NEUTRAL   = '#64748b'
-C_GRID      = '#f1f5f9'
-C_AXIS      = '#e2e8f0'
+C_BENIGN = '#16a34a'
+C_WARNING = '#f59e0b'
+C_NEUTRAL = '#64748b'
+C_GRID = '#f1f5f9'
+C_AXIS = '#e2e8f0'
 
 
 def _apply(fig, height=380, **extra):
@@ -87,7 +87,7 @@ def render_shap_plot(shap_values, feature_names):
     feature_names, shap_flat = feature_names[:n], shap_flat[:n]
 
     df_shap = pd.DataFrame({'Feature': [f.replace('_', ' ').title() for f in feature_names],
-                             'Contribution': shap_flat})
+                            'Contribution': shap_flat})
     df_shap['Abs'] = df_shap['Contribution'].abs()
     df_shap = df_shap.sort_values('Abs', ascending=True).tail(10)
     df_shap['Color'] = df_shap['Contribution'].apply(lambda x: C_MALIGNANT if x > 0 else C_BENIGN)
@@ -204,7 +204,7 @@ def render_radar_chart(user_input, df, features):
         polar=dict(
             bgcolor='#f8fafc',
             radialaxis=dict(visible=True, range=[0, 1], gridcolor='#e2e8f0',
-                           tickfont=dict(size=10, color='#64748b')),
+                            tickfont=dict(size=10, color='#64748b')),
             angularaxis=dict(gridcolor='#e2e8f0'),
         ),
         paper_bgcolor='#ffffff', height=400,
@@ -289,7 +289,7 @@ def render_sensitivity_plot(curve_data, feature_name):
 def render_synthetic_pca_plot(original_df, synthetic_df, features):
     pca = PCA(n_components=2)
     original_pca = pca.fit_transform(original_df[features])
-    synth_pca   = pca.transform(synthetic_df[features])
+    synth_pca = pca.transform(synthetic_df[features])
 
     fig = px.scatter(
         x=original_pca[:, 0], y=original_pca[:, 1],

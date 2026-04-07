@@ -1,5 +1,6 @@
 import streamlit as st
 
+
 def inject_custom_css():
     """Inject the full design-token CSS system into the Streamlit app."""
     st.markdown("""
@@ -227,11 +228,11 @@ def inject_custom_css():
             font-weight: 600;
             letter-spacing: 0.02em;
         }
-        .badge-success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
-        .badge-warning { background: var(--warning-bg); color: #92400e; border: 1px solid var(--warning-border); }
-        .badge-error   { background: var(--error-bg);   color: var(--error);   border: 1px solid var(--error-border); }
-        .badge-info    { background: var(--info-bg);    color: var(--info);    border: 1px solid var(--info-border); }
-        .badge-neutral { background: var(--bg-muted);   color: var(--text-secondary); border: 1px solid var(--border); }
+        .badge-success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }  # noqa: E501
+        .badge-warning { background: var(--warning-bg); color: #92400e; border: 1px solid var(--warning-border); }  # noqa: E501
+        .badge-error   { background: var(--error-bg);   color: var(--error);   border: 1px solid var(--error-border); }  # noqa: E501
+        .badge-info    { background: var(--info-bg);    color: var(--info);    border: 1px solid var(--info-border); }  # noqa: E501
+        .badge-neutral { background: var(--bg-muted);   color: var(--text-secondary); border: 1px solid var(--border); }  # noqa: E501
 
         /* ════════════════════════════════════════════════════════════════
            RESULT / DIAGNOSTIC CARDS
@@ -320,7 +321,7 @@ def inject_custom_css():
         .robustness-row    { display: flex; justify-content: space-between; align-items: center; }
         .robustness-level  { font-size: 20px; font-weight: 700; color: var(--text); }
         .robustness-score  { font-size: 13px; color: var(--text-muted); }
-        .robustness-ci     { font-size: 12px; color: var(--text-muted); margin-top: 6px; font-family: 'Courier New', monospace; }
+        .robustness-ci     { font-size: 12px; color: var(--text-muted); margin-top: 6px; font-family: 'Courier New', monospace; }  # noqa: E501
 
         /* ════════════════════════════════════════════════════════════════
            CLINICAL INSIGHT ROWS
@@ -335,9 +336,9 @@ def inject_custom_css():
             line-height: 1.55;
         }
         .insight-row strong { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 2px; }
-        .insight-row.high   { background: var(--error-bg);   border-color: var(--error-border);   color: #7f1d1d; border-left: 3px solid var(--error); }
-        .insight-row.medium { background: var(--warning-bg); border-color: var(--warning-border); color: #78350f; border-left: 3px solid var(--warning); }
-        .insight-row.low    { background: var(--success-bg); border-color: var(--success-border); color: #14532d; border-left: 3px solid var(--success); }
+        .insight-row.high   { background: var(--error-bg);   border-color: var(--error-border);   color: #7f1d1d; border-left: 3px solid var(--error); }  # noqa: E501
+        .insight-row.medium { background: var(--warning-bg); border-color: var(--warning-border); color: #78350f; border-left: 3px solid var(--warning); }  # noqa: E501
+        .insight-row.low    { background: var(--success-bg); border-color: var(--success-border); color: #14532d; border-left: 3px solid var(--success); }  # noqa: E501
 
         /* ════════════════════════════════════════════════════════════════
            METRIC TILES (for custom stats row)
@@ -655,10 +656,10 @@ def render_stats(df, features):
 
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        st.markdown(f'<div class="stat-tile"><div class="stat-tile-label">Total Samples</div><div class="stat-tile-value">{len(df)}</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-tile"><div class="stat-tile-label">Total Samples</div><div class="stat-tile-value">{len(df)}</div></div>', unsafe_allow_html=True)  # noqa: E501
     with c2:
-        st.markdown(f'<div class="stat-tile"><div class="stat-tile-label">Malignant</div><div class="stat-tile-value error">{malignant}</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-tile"><div class="stat-tile-label">Malignant</div><div class="stat-tile-value error">{malignant}</div></div>', unsafe_allow_html=True)  # noqa: E501
     with c3:
-        st.markdown(f'<div class="stat-tile"><div class="stat-tile-label">Benign</div><div class="stat-tile-value success">{benign}</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-tile"><div class="stat-tile-label">Benign</div><div class="stat-tile-value success">{benign}</div></div>', unsafe_allow_html=True)  # noqa: E501
     with c4:
-        st.markdown(f'<div class="stat-tile"><div class="stat-tile-label">Features</div><div class="stat-tile-value primary">{len(features)}</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-tile"><div class="stat-tile-label">Features</div><div class="stat-tile-value primary">{len(features)}</div></div>', unsafe_allow_html=True)  # noqa: E501

@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 import plotly.express as px
 
 
@@ -7,7 +6,10 @@ def render_dataset_explorer(df, features):
     """Clean, card-based dataset explorer with filter controls and summary metrics."""
 
     st.markdown('<div class="section-heading">Dataset Explorer</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-subtext">Filter, analyse, and visualise the WDBC training dataset.</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="section-subtext">Filter, analyse, and visualise the WDBC training dataset.</div>',
+        unsafe_allow_html=True,
+    )
 
     col_left, col_right = st.columns([1, 3])
 
@@ -85,7 +87,10 @@ def render_dataset_explorer(df, features):
             st.plotly_chart(fig, use_container_width=True)
 
     # ── Raw Data Table ─────────────────────────────────────────────────────────
-    st.markdown('<div class="section-label" style="margin-top:20px;">Filtered Sample Data</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="section-label" style="margin-top:20px;">Filtered Sample Data</div>',
+        unsafe_allow_html=True,
+    )
     with st.container(border=True):
         display_df = filtered_df.copy()
         display_df['diagnosis'] = display_df['diagnosis'].map({0: 'Benign', 1: 'Malignant'})

@@ -3,15 +3,15 @@ import pandas as pd
 
 # ── Clinical tooltips per feature ──────────────────────────────────────────────
 FEATURE_TOOLTIPS = {
-    "radius_mean":           "Mean of distances from center to points on the nucleus perimeter (micrometers). Larger values correlate with malignancy.",
+    "radius_mean":           "Mean of distances from center to points on the nucleus perimeter (micrometers). Larger values correlate with malignancy.",  # noqa: E501
     "perimeter_mean":        "Mean perimeter of the cell nucleus. Closely correlated with radius and area.",
     "area_mean":             "Mean cross-sectional area of cell nuclei (sq. micrometers).",
-    "compactness_mean":      "Mean compactness = (perimeter² / area − 1.0). Values above dataset mean suggest irregular morphology.",
+    "compactness_mean":      "Mean compactness = (perimeter² / area − 1.0). Values above dataset mean suggest irregular morphology.",  # noqa: E501
     "concavity_mean":        "Mean severity of concave contour sections on the cell nucleus.",
-    "concave_points_mean":   "Mean count of concave contour points. One of the strongest malignancy predictors in this dataset.",
-    "radius_se":             "Standard error of nuclear radius across sampled cells — indicates measurement variability.",
+    "concave_points_mean":   "Mean count of concave contour points. One of the strongest malignancy predictors in this dataset.",  # noqa: E501
+    "radius_se":             "Standard error of nuclear radius across sampled cells — indicates measurement variability.",  # noqa: E501
     "perimeter_se":          "Standard error of the nuclear perimeter across cells.",
-    "area_se":               "Standard error of nuclear area — high values suggest heterogeneous cell population.",
+    "area_se":               "Standard error of nuclear area — high values suggest heterogeneous cell population.",  # noqa: E501
     "radius_worst":          "Mean radius of the three largest nuclei in the sample.",
     "perimeter_worst":       "Mean perimeter of the three largest nuclei.",
     "area_worst":            "Mean area of the three largest nuclei — captures the most abnormal cells.",
@@ -28,9 +28,9 @@ PRIORITY_FEATURES = [
 ]
 
 CATEGORIES = [
-    ("Mean Measurements",      lambda f: f.endswith('_mean')),
-    ("Standard Error",         lambda f: f.endswith('_se')),
-    ("Worst-Case Measurements",lambda f: f.endswith('_worst')),
+    ("Mean Measurements", lambda f: f.endswith('_mean')),
+    ("Standard Error", lambda f: f.endswith('_se')),
+    ("Worst-Case Measurements", lambda f: f.endswith('_worst')),
 ]
 
 
@@ -84,7 +84,7 @@ def render_sidebar(df, expected_features):
                 unsafe_allow_html=True,
             )
 
-        st.markdown('<hr style="border:none;border-top:1px solid #e2e8f0;margin:4px 0 12px 0;">', unsafe_allow_html=True)
+        st.markdown('<hr style="border:none;border-top:1px solid #e2e8f0;margin:4px 0 12px 0;">', unsafe_allow_html=True)  # noqa: E501
 
         # ── Tumor Characteristics ─────────────────────────────────────────────
         st.markdown(

@@ -119,7 +119,10 @@ def main():
         # ── Input Summary ──────────────────────────────────────────────────────
         st.markdown('<div class="section-label">Patient Input Summary</div>', unsafe_allow_html=True)
         with st.container(border=True):
-            st.markdown('<div class="card-header">Tumor Measurements (Current Configuration)</div>', unsafe_allow_html=True)
+            st.markdown(
+                '<div class="card-header">Tumor Measurements (Current Configuration)</div>',
+                unsafe_allow_html=True,
+            )
             st.dataframe(user_input.style.format(precision=3), use_container_width=True)
 
         # ── Run Analysis ───────────────────────────────────────────────────────
@@ -131,13 +134,13 @@ def main():
         if run_clicked:
             with st.spinner("Processing measurements through ensemble model..."):
                 aligned = user_input[expected_features]
-                scaled  = scaler.transform(aligned)
+                scaled = scaler.transform(aligned)
 
-                proba      = model.predict_proba(scaled)[0]
-                result     = "Malignant" if proba[1] >= decision_threshold else "Benign"
+                proba = model.predict_proba(scaled)[0]
+                result = "Malignant" if proba[1] >= decision_threshold else "Benign"
                 confidence = max(proba)
 
-                X_scaled  = scaler.transform(X)
+                X_scaled = scaler.transform(X)
                 explainer = get_explainer(model, X_scaled)
                 shap_vals = None
                 if explainer:
@@ -148,7 +151,7 @@ def main():
                         else np.array(sv).flatten()
                     )
 
-                insights  = get_clinical_insights(user_input)
+                insights = get_clinical_insights(user_input)
                 robustness = calculate_model_robustness(model, scaled)
                 log_prediction(user_input[expected_features], result, confidence)
 
@@ -162,7 +165,7 @@ def main():
 
         # ── Results ────────────────────────────────────────────────────────────
         if st.session_state.analysis_results:
-            res    = st.session_state.analysis_results
+            res = st.session_state.analysis_results
             result = res['result']
             css_cls = 'malignant' if result == 'Malignant' else 'benign'
             card_cls = 'malignant-card' if result == 'Malignant' else 'benign-card'
@@ -204,23 +207,32 @@ def main():
                         <div class="robustness-title">Diagnostic Robustness</div>
                         <div class="robustness-row">
                             <span class="robustness-level">{rob['stability_level']}</span>
-                            <span class="robustness-score">Ensemble Agreement: {rob['stability_score']:.0f}%</span>
+                            <span class="robustness-score">Ensemble Agreement: {rob['stability_score']:.0f}%</span>  # noqa: E501
                         </div>
-                        <div class="robustness-ci">95% CI&nbsp; [{rob['ci'][0]:.1%} &mdash; {rob['ci'][1]:.1%}]</div>
+                        <div class="robustness-ci">95% CI&nbsp; [{rob['ci'][0]:.1%} &mdash; {rob['ci'][1]:.1%}]</div>  # noqa: E501
                     </div>
                 """, unsafe_allow_html=True)
 
-                st.markdown('<div class="section-label">Probability Distribution</div>', unsafe_allow_html=True)
+                st.markdown(
+                    '<div class="section-label">Probability Distribution</div>',
+                    unsafe_allow_html=True,
+                )
                 with st.container(border=True):
                     render_probability_chart(res['proba'])
 
-                st.markdown('<div class="section-label">Ensemble Variance</div>', unsafe_allow_html=True)
+                st.markdown(
+                    '<div class="section-label">Ensemble Variance</div>',
+                    unsafe_allow_html=True,
+                )
                 with st.container(border=True):
                     render_robustness_chart(rob)
 
                 # SHAP
                 if res['shap'] is not None:
-                    st.markdown('<div class="section-label">Explainability (SHAP)</div>', unsafe_allow_html=True)
+                    st.markdown(
+                        '<div class="section-label">Explainability (SHAP)</div>',
+                        unsafe_allow_html=True,
+                    )
                     with st.container(border=True):
                         render_shap_plot(res['shap'], expected_features)
 
@@ -235,7 +247,10 @@ def main():
                         render_pca_plot(user_input, df, expected_features)
 
                 # Clinical Insights
-                st.markdown('<div class="section-label">Clinical Insights (Rule-Based)</div>', unsafe_allow_html=True)
+                st.markdown(
+                    '<div class="section-label">Clinical Insights (Rule-Based)</div>',
+                    unsafe_allow_html=True,
+                )
                 with st.container(border=True):
                     if res['insights']:
                         st.markdown(
@@ -247,8 +262,11 @@ def main():
 
                 # What-If Analysis
                 if result == "Malignant":
-                    st.markdown('<div class="section-label">What-If Analysis</div>', unsafe_allow_html=True)
-                    with st.expander("Explore the decision boundary — required changes for Benign classification"):
+                    st.markdown(
+                        '<div class="section-label">What-If Analysis</div>',
+                        unsafe_allow_html=True,
+                    )
+                    with st.expander("Explore the decision boundary — required changes for Benign classification"):  # noqa: E501
                         st.info(
                             "This simulation finds the minimum adjustments needed to cross "
                             "the statistical Benign classification boundary."
@@ -261,7 +279,7 @@ def main():
                                 if error:
                                     st.warning(error)
                                 else:
-                                    st.success(f"Boundary found in {cf_data['iterations']} optimisation iterations.")
+                                    st.success(f"Boundary found in {cf_data['iterations']} optimisation iterations.")  # noqa: E501
                                     chg_df = pd.DataFrame(cf_data['changes'])
                                     st.dataframe(
                                         chg_df[['feature', 'from', 'to', 'change']].style.format({
@@ -269,12 +287,18 @@ def main():
                                         }),
                                         use_container_width=True, hide_index=True,
                                     )
-                                    st.caption("Features not listed remained within 1% of their original value.")
+                                    st.caption("Features not listed remained within 1% of their original value.")  # noqa: E501
 
                 # Sensitivity Analysis
-                st.markdown('<div class="section-label">Feature Sensitivity Analysis</div>', unsafe_allow_html=True)
+                st.markdown(
+                    '<div class="section-label">Feature Sensitivity Analysis</div>',
+                    unsafe_allow_html=True,
+                )
                 with st.container(border=True):
-                    st.markdown('<div class="card-header">Sensitivity Curve</div>', unsafe_allow_html=True)
+                    st.markdown(
+                        '<div class="card-header">Sensitivity Curve</div>',
+                        unsafe_allow_html=True,
+                    )
                     def_idx = (
                         expected_features.index("concave_points_mean")
                         if "concave_points_mean" in expected_features else 0
@@ -327,7 +351,11 @@ def main():
     # ══════════════════════════════════════════════════════════════════════════
     with tab_monitor:
         st.markdown('<div class="section-heading">Operational Monitoring</div>', unsafe_allow_html=True)
-        st.markdown('<div class="section-subtext">Real-time data drift analysis and prediction history tracking.</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="section-subtext">'  # noqa: E501
+            'Real-time data drift analysis and prediction history tracking.</div>',
+            unsafe_allow_html=True,
+        )
 
         # ── Drift ──────────────────────────────────────────────────────────────
         st.markdown('<div class="section-label">Data Drift Analysis</div>', unsafe_allow_html=True)
@@ -359,8 +387,8 @@ def main():
         if not history_df.empty:
             h_col1, h_col2, h_col3 = st.columns(3)
             total_preds = len(history_df)
-            mal_preds   = (history_df['prediction'] == 'Malignant').sum()
-            ben_preds   = total_preds - mal_preds
+            mal_preds = (history_df['prediction'] == 'Malignant').sum()
+            ben_preds = total_preds - mal_preds
 
             h_col1.metric('Total Predictions', total_preds)
             h_col2.metric('Malignant', mal_preds)
@@ -389,7 +417,11 @@ def main():
     # ══════════════════════════════════════════════════════════════════════════
     with tab_error:
         st.markdown('<div class="section-heading">Model Error Analysis</div>', unsafe_allow_html=True)
-        st.markdown('<div class="section-subtext">Evaluate misclassification behaviour across the full WDBC dataset at the current decision threshold.</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="section-subtext">Evaluate misclassification behaviour across the full '
+            'WDBC dataset at the current decision threshold.</div>',
+            unsafe_allow_html=True,
+        )
 
         error_data = get_error_analysis_data(model, scaler, df, expected_features, decision_threshold)
 
@@ -398,10 +430,14 @@ def main():
         e_col1.metric('Accuracy', f"{error_data['accuracy']:.1%}")
         e_col2.metric('Threshold', f"T = {decision_threshold:.2f}")
         e_col3.metric('Total Errors', error_data['total_errors'])
-        fp = len(error_data['misclassified'][error_data['misclassified']['Error_Type'] == 'False Positive']) if not error_data['misclassified'].empty else 0
+        misclassified = error_data['misclassified']
+        fp = (
+            len(misclassified[misclassified['Error_Type'] == 'False Positive'])
+            if not misclassified.empty else 0
+        )
         fn = error_data['total_errors'] - fp
         e_col4.metric('FN / FP', f"{fn} / {fp}",
-                      help='False Negatives (missed malignant) / False Positives (benign flagged as malignant)')
+                      help='False Negatives (missed malignant) / False Positives (benign flagged as malignant)')  # noqa: E501
 
         # ROC Curve
         st.markdown('<div class="section-label">ROC Curve</div>', unsafe_allow_html=True)
@@ -417,7 +453,7 @@ def main():
                 render_confusion_matrix(error_data['cm'])
         with col_ed:
             with st.container(border=True):
-                st.markdown('<div class="card-header">Error Probability Distribution</div>', unsafe_allow_html=True)
+                st.markdown('<div class="card-header">Error Probability Distribution</div>', unsafe_allow_html=True)  # noqa: E501
                 render_error_distribution(error_data['misclassified'])
 
         # Misclassification Log
@@ -432,8 +468,15 @@ def main():
     #  TAB 5 — Research Lab
     # ══════════════════════════════════════════════════════════════════════════
     with tab_lab:
-        st.markdown('<div class="section-heading">Research Lab: Synthetic Stress Testing</div>', unsafe_allow_html=True)
-        st.markdown('<div class="section-subtext">Evaluate model generalisation by simulating clinical edge cases via Gaussian multivariate sampling.</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="section-heading">Research Lab: Synthetic Stress Testing</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<div class="section-subtext">Evaluate model generalisation by simulating '
+            'clinical edge cases via Gaussian multivariate sampling.</div>',
+            unsafe_allow_html=True,
+        )
 
         lab_left, lab_right = st.columns([1, 2])
 
@@ -451,8 +494,10 @@ def main():
                     help="Constrain synthetic samples toward a specific clinical distribution.",
                 )
                 target_val = None
-                if target_class == "Benign Profile":    target_val = 0
-                if target_class == "Malignant Profile": target_val = 1
+                if target_class == "Benign Profile":
+                    target_val = 0
+                if target_class == "Malignant Profile":
+                    target_val = 1
 
                 run_synth = st.button("Run Stress Test", key="synth_btn", use_container_width=True)
 
@@ -480,11 +525,11 @@ def main():
         with lab_right:
             if 'synthetic_results' in st.session_state:
                 with st.container(border=True):
-                    st.markdown('<div class="card-header">PCA Manifold Projection</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="card-header">PCA Manifold Projection</div>', unsafe_allow_html=True)  # noqa: E501
                     render_synthetic_pca_plot(df, st.session_state.synthetic_results, expected_features)
 
         if 'synthetic_results' in st.session_state:
-            st.markdown('<div class="section-label">Synthetic Sample Batch Results</div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-label">Synthetic Sample Batch Results</div>', unsafe_allow_html=True)  # noqa: E501
             with st.container(border=True):
                 st.dataframe(st.session_state.synthetic_results, use_container_width=True, hide_index=True)
 
@@ -494,7 +539,7 @@ def main():
     with tab_explore:
         render_dataset_explorer(df, expected_features)
 
-        st.markdown('<div class="section-label" style="margin-top:24px;">Feature Correlation</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-label" style="margin-top:24px;">Feature Correlation</div>', unsafe_allow_html=True)  # noqa: E501
         with st.container(border=True):
             render_correlation_heatmap(df, expected_features)
 
