@@ -56,11 +56,14 @@ class PatientReport(FPDF):
 def _section_title(pdf, text):
     """Bold blue-left-border section heading."""
     _fill(pdf, _BLUE)
-    pdf.rect(10, pdf.get_y(), 2, 8, "F")
-    pdf.set_x(14)
+    # Background bar
+    pdf.rect(pdf.l_margin, pdf.get_y(), 2, 8, "F")
+    pdf.set_x(pdf.l_margin + 4)
     pdf.set_font("Helvetica", "B", 13)
     _rgb(pdf, _DARK)
-    pdf.cell(0, 8, text, ln=True)
+    # Explicit width for safety
+    epw = pdf.w - pdf.l_margin - pdf.r_margin
+    pdf.cell(epw - 4, 8, text, ln=True)
     pdf.ln(2)
 
 
@@ -74,10 +77,13 @@ def _divider(pdf):
 def _kv_row(pdf, label, value, bold_value=False):
     pdf.set_font("Helvetica", "B", 10)
     _rgb(pdf, _GREY)
-    pdf.cell(70, 7, label, ln=False)
+    label_w = 70
+    pdf.cell(label_w, 7, label, ln=False)
     pdf.set_font("Helvetica", "B" if bold_value else "", 10)
     _rgb(pdf, _DARK)
-    pdf.multi_cell(0, 7, str(value))
+    # Explicitly calculate remaining width to avoid 'Not enough horizontal space'
+    avail_w = pdf.w - pdf.r_margin - pdf.get_x()
+    pdf.multi_cell(max(10, avail_w), 7, str(value))
 
 
 def _prob_bar(pdf, label, pct, colour):
@@ -109,7 +115,8 @@ def _prob_bar(pdf, label, pct, colour):
     # percentage text (right of bar)
     pdf.set_xy(bar_x + BAR_W + 3, y)
     _rgb(pdf, colour)
-    pdf.cell(20, BAR_H, f"{pct:.1%}")
+    # Explicit width for percentage label
+    pdf.cell(15, BAR_H, f"{pct:.1%}")
     pdf.ln(BAR_H + 3)
 
 
@@ -258,7 +265,7 @@ def generate_patient_report(
     _section_title(pdf, "5. Patient Input Measurements (All Features)")
     pdf.set_font("Helvetica", "I", 9)
     _rgb(pdf, _GREY)
-    pdf.cell(0, 6,
+    pdf.cell(epw, 6,
              "Full set of tumour morphology values submitted for this analysis.",
              ln=True)
     pdf.ln(2)
@@ -324,10 +331,9 @@ def generate_patient_report(
     _section_title(pdf, "7. Clinical Observations (Rule-Based Flags)")
     pdf.set_font("Helvetica", "I", 9)
     _rgb(pdf, _GREY)
-    pdf.cell(
-        0, 5,
+    pdf.multi_cell(
+        epw, 5,
         "Observations derived from evidence-based morphological thresholds.",
-        ln=True,
     )
     pdf.ln(3)
 
@@ -351,13 +357,13 @@ def generate_patient_report(
 
         pdf.set_font("Helvetica", "B", 9)
         _rgb(pdf, _DARK)
-        pdf.set_xy(38, y0)
-        pdf.cell(0, 6, feat, ln=True)
+        pdf.set_xy(pdf.l_margin + 28, y0)
+        pdf.cell(epw - 28, 6, feat, ln=True)
 
         pdf.set_font("Helvetica", "", 9)
         _rgb(pdf, _GREY)
-        pdf.set_x(14)
-        pdf.multi_cell(0, 5, text)
+        pdf.set_x(pdf.l_margin)
+        pdf.multi_cell(epw, 5, text)
         pdf.ln(2)
 
     pdf.ln(3)
@@ -372,7 +378,7 @@ def generate_patient_report(
         pdf.rect(pdf.l_margin, pdf.get_y(), epw, 10, "FD")
         pdf.set_font("Helvetica", "B", 10)
         _rgb(pdf, _RED)
-        pdf.cell(0, 10,
+        pdf.cell(epw, 10,
                  "  IMPORTANT: The AI system has flagged a HIGH MALIGNANCY RISK.",
                  ln=True)
         pdf.ln(3)
@@ -406,7 +412,7 @@ def generate_patient_report(
         pdf.rect(pdf.l_margin, pdf.get_y(), epw, 10, "FD")
         pdf.set_font("Helvetica", "B", 10)
         _rgb(pdf, _GREEN)
-        pdf.cell(0, 10,
+        pdf.cell(epw, 10,
                  "  The AI system has classified the tumour profile as LIKELY BENIGN.",
                  ln=True)
         pdf.ln(3)
@@ -435,12 +441,12 @@ def generate_patient_report(
     for step_num, (title, body) in enumerate(steps, 1):
         pdf.set_font("Helvetica", "B", 10)
         _rgb(pdf, _DARK)
-        pdf.set_x(14)
-        pdf.cell(0, 7, f"  {step_num}. {title}", ln=True)
+        pdf.set_x(pdf.l_margin + 4)
+        pdf.cell(epw - 4, 7, f"  {step_num}. {title}", ln=True)
         pdf.set_font("Helvetica", "", 9)
         _rgb(pdf, _GREY)
-        pdf.set_x(20)
-        pdf.multi_cell(0, 5, body)
+        pdf.set_x(pdf.l_margin + 8)
+        pdf.multi_cell(epw - 8, 5, body)
         pdf.ln(2)
 
     pdf.ln(3)
