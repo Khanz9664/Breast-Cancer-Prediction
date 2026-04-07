@@ -15,7 +15,6 @@ Covers:
 """
 
 import pandas as pd
-import pytest
 from utils.clinical_insights import get_clinical_insights
 
 

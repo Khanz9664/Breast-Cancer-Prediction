@@ -13,8 +13,6 @@ Covers:
   - Works correctly for every feature in the priority list
 """
 
-import numpy as np
-import pandas as pd
 import pytest
 from utils.sensitivity import calculate_sensitivity_curve
 

@@ -11,11 +11,7 @@ Specifically tests:
   - _insight_block() wraps with the correct severity CSS class
   - _insight_block() handles edge-case severities without crash
 """
-
-import importlib
 import sys
-import types
-import pytest
 
 
 # ---------------------------------------------------------------------------

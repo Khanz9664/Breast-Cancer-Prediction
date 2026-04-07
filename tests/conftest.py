@@ -10,7 +10,6 @@ import sys
 import os
 import types
 
-import numpy as np
 import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier

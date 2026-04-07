@@ -80,28 +80,31 @@ def _kv_row(pdf, label, value, bold_value=False):
 
 def _prob_bar(pdf, label, pct, colour):
     """Draw a labelled horizontal bar for a probability."""
-    BAR_W = 120
+    LABEL_W = 50   # fixed label column width (mm)
+    BAR_W = 110
     BAR_H = 10
-    x = pdf.get_x() + 5
+    bar_x = 14 + LABEL_W + 2  # fixed bar start: left margin + label + gap
     y = pdf.get_y()
 
     # bar background
     _fill(pdf, _MID)
     _draw(pdf, _MID)
-    pdf.rect(x, y, BAR_W, BAR_H, "FD")
+    pdf.rect(bar_x, y, BAR_W, BAR_H, "FD")
 
     # filled portion
     filled = max(2, BAR_W * pct)
     _fill(pdf, colour)
     _draw(pdf, colour)
-    pdf.rect(x, y, filled, BAR_H, "FD")
+    pdf.rect(bar_x, y, filled, BAR_H, "FD")
 
-    # labels
+    # label text (left column)
     pdf.set_font("Helvetica", "B", 9)
     _rgb(pdf, _DARK)
     pdf.set_xy(14, y)
-    pdf.cell(x - 14 - 2, BAR_H, label)
-    pdf.set_xy(x + BAR_W + 3, y)
+    pdf.cell(LABEL_W, BAR_H, label)
+
+    # percentage text (right of bar)
+    pdf.set_xy(bar_x + BAR_W + 3, y)
     _rgb(pdf, colour)
     pdf.cell(20, BAR_H, f"{pct:.1%}")
     pdf.ln(BAR_H + 3)
@@ -162,6 +165,7 @@ def generate_patient_report(
     result_colour = _RED if is_malignant else _GREEN
 
     pdf = PatientReport()
+    pdf.set_margins(left=10, top=10, right=10)
     pdf.set_auto_page_break(auto=True, margin=18)
     pdf.add_page()
 

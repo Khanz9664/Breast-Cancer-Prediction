@@ -34,7 +34,11 @@ def _make_inputs(wdbc_features, df):
 
 def _dummy_insights(n: int = 2):
     return [
-        {"feature": f"Feature {i}", "insight": f"Insight text {i}.", "severity": ["high", "medium", "low"][i % 3]}
+        {
+            "feature": f"Feature {i}",
+            "insight": f"Insight text {i}.",
+            "severity": ["high", "medium", "low"][i % 3]
+        }
         for i in range(n)
     ]
 

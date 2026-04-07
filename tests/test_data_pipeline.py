@@ -38,9 +38,7 @@ Covers:
 
 import numpy as np
 import pandas as pd
-import pytest
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 
 
 # ---------------------------------------------------------------------------
@@ -173,7 +171,9 @@ class TestModelInferenceContract:
         preds = trained_model.predict(X_scaled)
         assert set(preds).issubset({0, 1})
 
-    def test_full_inference_pipeline_on_mean_input(self, trained_model, scaler, df, wdbc_features, sample_input):
+    def test_full_inference_pipeline_on_mean_input(
+        self, trained_model, scaler, df, wdbc_features, sample_input
+    ):
         """End-to-end: mean-value input → scaled → proba → classification."""
         scaled = scaler.transform(sample_input[wdbc_features])
         proba = trained_model.predict_proba(scaled)[0]

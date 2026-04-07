@@ -15,7 +15,6 @@ Covers:
   - analyze_error_patterns() returns a DataFrame for non-empty misclassified
 """
 
-import numpy as np
 import pandas as pd
 import pytest
 from utils.error_analysis import get_error_analysis_data, analyze_error_patterns
