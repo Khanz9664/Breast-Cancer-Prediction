@@ -112,12 +112,16 @@ class TestGetErrorAnalysisData:
 
     def test_high_threshold_increases_false_negatives(self):
         """Very high threshold → more FN (missed malignant)."""
-        res_low  = get_error_analysis_data(self.model, self.scaler, self.df, self.features, 0.20)
+        res_low = get_error_analysis_data(self.model, self.scaler, self.df, self.features, 0.20)
         res_high = get_error_analysis_data(self.model, self.scaler, self.df, self.features, 0.85)
-        fn_low  = len(res_low["misclassified"][res_low["misclassified"]["Error_Type"] == "False Negative"]) \
-                  if not res_low["misclassified"].empty else 0
-        fn_high = len(res_high["misclassified"][res_high["misclassified"]["Error_Type"] == "False Negative"]) \
-                  if not res_high["misclassified"].empty else 0
+        fn_low = (
+            len(res_low["misclassified"][res_low["misclassified"]["Error_Type"] == "False Negative"])
+            if not res_low["misclassified"].empty else 0
+        )
+        fn_high = (
+            len(res_high["misclassified"][res_high["misclassified"]["Error_Type"] == "False Negative"])
+            if not res_high["misclassified"].empty else 0
+        )
         assert fn_high >= fn_low
 
 

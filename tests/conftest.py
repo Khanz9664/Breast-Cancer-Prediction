@@ -168,8 +168,8 @@ def voting_model(df, wdbc_features, scaler):
     X = scaler.transform(df[wdbc_features])
     y = df["diagnosis"]
 
-    rf  = RandomForestClassifier(n_estimators=10, random_state=0)
-    lr  = LogisticRegression(max_iter=1000, random_state=0)
+    rf = RandomForestClassifier(n_estimators=10, random_state=0)
+    lr = LogisticRegression(max_iter=1000, random_state=0)
     svc = SVC(probability=True, random_state=0)
 
     vc = VotingClassifier(estimators=[("rf", rf), ("lr", lr), ("svc", svc)], voting="soft")
